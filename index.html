@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="manifest" href="manifest.json">
+    <title>施設警備検定 学科対策</title>
+    <style>
+        /* 基本設定 */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; background-color: #e9ecef; color: #2c3e50; }
+        .screen { display: none; width: 100%; height: 100dvh; flex-direction: column; align-items: center; padding: 12px; }
+        .screen.active { display: flex; }
+        .container { width: 100%; max-width: 480px; display: flex; flex-direction: column; height: 100%; }
+        .main-title { text-align: center; margin: 10px 0; font-weight: 900; font-size: 1.6rem; color: #1a2a3a; }
+        .rule-box { width: 100%; background: #fdf2f2; border: 3px solid #c0392b; border-radius: 12px; padding: 15px; margin-bottom: 12px; box-shadow: 0 4px 0 #a93226; }
+        .rule-title { font-size: 1.3rem; font-weight: 900; color: #c0392b; text-align: center; border-bottom: 2px solid #c0392b; margin-bottom: 10px; padding-bottom: 5px; }
+        .rule-list { margin: 0; padding: 0; list-style: none; font-size: 1.15rem; font-weight: 800; line-height: 1.6; text-align: center; }
+        .advice-box { width: 100%; background: #f8f9fa; border: 2px solid #34495e; border-radius: 12px; padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
+        .advice-title { font-size: 1.1rem; font-weight: 800; color: #2c3e50; border-bottom: 2px solid #34495e; margin-bottom: 10px; }
+        .advice-list { margin: 0; padding-left: 1.2rem; font-size: 1.05rem; font-weight: 600; line-height: 1.5; }
+        .btn-area { margin-top: 15px; padding-bottom: 10px; }
+        .btn { width: 100%; min-height: 60px; margin-bottom: 12px; border: 3px solid #2c3e50; border-radius: 15px; background: #fff; font-size: 1.2rem; font-weight: 900; cursor: pointer; display: flex; justify-content: center; align-items: center; padding: 10px; box-shadow: 0 4px 0 #2c3e50; }
+        .btn:active { background-color: #ced4da; transform: translateY(2px); box-shadow: 0 2px 0 #2c3e50; }
+        .btn:disabled { background-color: #adb5bd; border-color: #6c757d; color: #dee2e6; cursor: not-allowed; box-shadow: none; }
+        #resume-btn { background-color: #d1ecf1; border-color: #0c5460; color: #0c5460; display: none; box-shadow: 0 4px 0 #0c5460; }
+        .choice-btn { text-align: left !important; justify-content: flex-start !important; padding-left: 20px !important; font-weight: 700; font-size: 1rem; min-height: 52px; line-height: 1.3; }
+        .header { display: flex; justify-content: space-between; padding-bottom: 8px; font-weight: 700; color: #495057; }
+        .box { width: 100%; background: #f8f9fa; border: 2px solid #34495e; border-radius: 10px; padding: 15px; }
+        #question-text { font-size: 1.15rem; font-weight: 700; line-height: 1.5; white-space: pre-wrap; flex-grow: 1; margin-bottom: 15px; overflow-y: auto; color: #1a1a1a; }
+        .sub-btn-area { display: flex; gap: 10px; }
+        .sub-btn { min-height: 45px; font-size: 0.9rem; flex: 1; margin-bottom: 0; border-width: 2px; box-shadow: none !important; }
+        .result-mark { font-size: 4rem; text-align: center; font-weight: 900; margin: 10px 0; }
+        #explanation-text { flex-grow: 1; overflow-y: auto; font-size: 1.05rem; font-weight: 600; line-height: 1.7; white-space: pre-wrap; color: #2c3e50; }
+    </style>
+</head>
+<body>
+
+    <section id="title-screen" class="screen active">
+        <div class="container">
+            <h1 class="main-title">施設警備検定<br>学科試験対策</h1>
+            <div class="rule-box">
+                <div class="rule-title">◆ 本アプリのルール ◆</div>
+                <ul class="rule-list">
+                    <li>20問を1ブロックで学習</li>
+                    <li><span style="color:#a93226; font-size:1.3rem;">3問ミス</span>で強制終了</li>
+                    <li>最初からやり直し</li>
+                </ul>
+            </div>
+            <div class="advice-box">
+                <div class="advice-title">試験対策アドバイス</div>
+                <ul class="advice-list">
+                    <li>繰り返し問題を解き知識を定着させる</li>
+                    <li>間違えた問題は解説をよく読み込む</li>
+                    <li>法令は条文の正確な理解が重要</li>
+                </ul>
+                <p id="loading-msg" style="margin-top:auto; font-size:1rem; font-weight:900; text-align:center; color:#c0392b; padding-top:10px;">データを読み込み中...</p>
+            </div>
+            <div class="btn-area">
+                <button id="resume-btn" class="btn" onclick="initSession(true)">続きから再開</button>
+                <button id="start-btn" class="btn" onclick="initSession(false)" disabled>新しく始める</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="question-screen" class="screen">
+        <div class="container">
+            <div class="header"><span id="progress-text">00 / 20</span><span style="color:#c0392b;">ミス: <span id="error-count">0</span> / 3</span></div>
+            <div class="box" id="question-text"></div>
+            <div id="choices-area"></div>
+            <div class="sub-btn-area">
+                <button class="btn sub-btn" onclick="saveAndQuit()">中断（保存）</button>
+                <button class="btn sub-btn" onclick="quitApp()">タイトルへ</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="result-screen" class="screen">
+        <div class="container">
+            <div id="result-mark" class="result-mark"></div>
+            <div id="result-label" style="text-align:center; font-weight:900; font-size:1.4rem; margin-bottom:10px;"></div>
+            <div class="box" id="explanation-text"></div>
+            <button class="btn" id="next-btn" style="margin-top:15px;" onclick="handleNext()">次へ進む</button>
+        </div>
+    </section>
+
+    <script>
+        let allQuestions = [];
+        let currentBlock = [];
+        let currentIndex = 0;
+        let errorCount = 0;
+        const QUESTIONS_PER_BLOCK = 20;
+
+        async function loadQuestions() {
+            const msgElement = document.getElementById('loading-msg');
+            const startBtn = document.getElementById('start-btn');
+            try {
+                const response = await fetch('questions.json');
+                if (!response.ok) throw new Error('ERR');
+                allQuestions = await response.json();
+                msgElement.innerText = "100問マスターして合格を掴もう！";
+                msgElement.style.color = "#2c3e50";
+                startBtn.disabled = false;
+                if(localStorage.getItem('shisetsu_save')) document.getElementById('resume-btn').style.display = 'flex';
+            } catch (error) {
+                msgElement.innerText = "エラー: questions.jsonが見つかりません";
+            }
+        }
+
+        window.onload = loadQuestions;
+
+        function initSession(isResume) {
+            if (isResume) {
+                const saveData = JSON.parse(localStorage.getItem('shisetsu_save'));
+                currentBlock = saveData.currentBlock; currentIndex = saveData.currentIndex; errorCount = saveData.errorCount;
+            } else {
+                errorCount = 0; currentIndex = 0;
+                currentBlock = [...allQuestions].sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_BLOCK);
+            }
+            renderQuestion(); showScreen('question-screen');
+        }
+
+        function renderQuestion() {
+            const data = currentBlock[currentIndex];
+            document.getElementById('progress-text').innerText = `${currentIndex + 1} / ${currentBlock.length}`;
+            document.getElementById('error-count').innerText = errorCount;
+            document.getElementById('question-text').innerText = data.q;
+            const area = document.getElementById('choices-area');
+            area.innerHTML = '';
+            data.choices.forEach((c, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn choice-btn';
+                btn.innerText = `${i + 1}. ${c}`;
+                btn.onclick = () => checkAnswer(i);
+                area.appendChild(btn);
+            });
+        }
+
+        function formatExplanation(text) {
+            return text.replace(/([①-⑳])/g, '\n$1').trim();
+        }
+
+        function checkAnswer(idx) {
+            const data = currentBlock[currentIndex];
+            const isCorrect = (idx === data.a);
+            const mark = document.getElementById('result-mark');
+            const label = document.getElementById('result-label');
+            const nextBtn = document.getElementById('next-btn');
+            if (isCorrect) {
+                mark.innerText = "◎"; mark.style.color = "#218838"; label.innerText = "正解";
+            } else {
+                errorCount++;
+                mark.innerText = "×"; mark.style.color = "#c0392b"; label.innerText = "不正解";
+                if (errorCount >= 3) nextBtn.innerText = "ブロック最初からやり直し";
+            }
+            document.getElementById('explanation-text').innerText = formatExplanation(data.ex);
+            showScreen('result-screen');
+        }
+
+        function handleNext() {
+            if (errorCount >= 3) { localStorage.removeItem('shisetsu_save'); initSession(false); return; }
+            currentIndex++;
+            if (currentIndex < currentBlock.length) { renderQuestion(); showScreen('question-screen'); }
+            else { alert("完了！"); localStorage.removeItem('shisetsu_save'); location.reload(); }
+        }
+
+        function saveAndQuit() {
+            localStorage.setItem('shisetsu_save', JSON.stringify({ currentBlock, currentIndex, errorCount }));
+            alert("保存しました。"); location.reload();
+        }
+
+        function quitApp() { if (confirm("戻りますか？")) location.reload(); }
+        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+
+        // --- Service Workerの登録コード ---
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').then(() => console.log('SW Registered'));
+        }
+    </script>
+</body>
+</html>
